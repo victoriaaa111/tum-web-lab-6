@@ -1,8 +1,13 @@
+import PageLayout from './components/layout/PageLayout'
+
 function App() {
+  function handleAddWorkout() {
+    // wired in add-workout branch
+  }
+
   return (
-    <div className="min-h-screen font-body text-ink">
-      <h1 className="font-display text-4xl p-6">Workout Journal</h1>
-    </div>
+    <PageLayout onAddWorkout={handleAddWorkout}>
+    </PageLayout>
   )
 }
 
