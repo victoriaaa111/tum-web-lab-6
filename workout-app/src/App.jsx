@@ -6,6 +6,7 @@ function App() {
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem('workout-journal-theme') === 'dark'
   })
+  const [addOpen, setAddOpen] = useState(false)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
@@ -13,8 +14,12 @@ function App() {
   }, [isDark])
 
   return (
-    <PageLayout onToggleTheme={() => setIsDark(d => !d)} isDark={isDark}>
-      <Workouts />
+    <PageLayout
+      onToggleTheme={() => setIsDark(d => !d)}
+      isDark={isDark}
+      onAddWorkout={() => setAddOpen(true)}
+    >
+      <Workouts addOpen={addOpen} onCloseAdd={() => setAddOpen(false)} />
     </PageLayout>
   )
 }
