@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createWorkout } from '../utils/workout'
+import WorkoutCard from './WorkoutCard'
 
 const KEY = 'workout-journal-workouts'
 
@@ -38,8 +39,15 @@ export default function Workouts() {
   }
 
   return (
-    <div>
-      {/* workout list renders here */}
+    <div className="flex flex-col gap-4">
+      {workouts.map(workout => (
+        <WorkoutCard
+          key={workout.id}
+          workout={workout}
+          onRemove={remove}
+          onToggleFavorite={toggleFavorite}
+        />
+      ))}
     </div>
   )
 }
