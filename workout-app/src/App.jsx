@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PageLayout from './components/layout/PageLayout'
+import Workouts from './components/Workouts'
 
 function App() {
   const [isDark, setIsDark] = useState(() => {
@@ -11,12 +12,9 @@ function App() {
     localStorage.setItem('workout-journal-theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
-  function handleAddWorkout() {
-    // wired in add-workout branch
-  }
-
   return (
-    <PageLayout onAddWorkout={handleAddWorkout} onToggleTheme={() => setIsDark(d => !d)} isDark={isDark}>
+    <PageLayout onToggleTheme={() => setIsDark(d => !d)} isDark={isDark}>
+      <Workouts />
     </PageLayout>
   )
 }
