@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createWorkout } from '../utils/workout'
 import WorkoutCard from './WorkoutCard'
+import AddWorkoutModal from './AddWorkoutModal'
 
 const KEY = 'workout-journal-workouts'
 
@@ -13,7 +14,7 @@ function load() {
   }
 }
 
-export default function Workouts() {
+export default function Workouts({ addOpen, onCloseAdd }) {
   const [workouts, setWorkouts] = useState(load)
 
   function save(updated) {
@@ -39,15 +40,23 @@ export default function Workouts() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {workouts.map(workout => (
-        <WorkoutCard
-          key={workout.id}
-          workout={workout}
-          onRemove={remove}
-          onToggleFavorite={toggleFavorite}
-        />
-      ))}
-    </div>
+    <>
+      <div className="flex flex-col gap-4">
+        {workouts.map(workout => (
+          <WorkoutCard
+            key={workout.id}
+            workout={workout}
+            onRemove={remove}
+            onToggleFavorite={toggleFavorite}
+          />
+        ))}
+      </div>
+
+      <AddWorkoutModal
+        isOpen={addOpen}
+        onSave={data => { add(data); onCloseAdd() }}
+        onClose={onCloseAdd}
+      />
+    </>
   )
 }
