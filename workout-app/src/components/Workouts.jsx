@@ -16,6 +16,7 @@ function load() {
 
 export default function Workouts({ addOpen, onCloseAdd }) {
   const [workouts, setWorkouts] = useState(load)
+  const [editTarget, setEditTarget] = useState(null)
 
   function save(updated) {
     setWorkouts(updated)
@@ -24,6 +25,10 @@ export default function Workouts({ addOpen, onCloseAdd }) {
 
   function add(data = {}) {
     save([createWorkout(data), ...workouts])
+  }
+
+  function update(id, data) {
+    save(workouts.map(w => w.id === id ? { ...w, ...data } : w))
   }
 
   function remove(id) {
@@ -39,6 +44,21 @@ export default function Workouts({ addOpen, onCloseAdd }) {
     save([...workouts, ...incoming.filter(w => !existingIds.has(w.id))])
   }
 
+  function handleSave(data) {
+    if (editTarget) {
+      update(editTarget.id, data)
+      setEditTarget(null)
+    } else {
+      add(data)
+      onCloseAdd()
+    }
+  }
+
+  function handleClose() {
+    setEditTarget(null)
+    onCloseAdd()
+  }
+
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -48,14 +68,17 @@ export default function Workouts({ addOpen, onCloseAdd }) {
             workout={workout}
             onRemove={remove}
             onToggleFavorite={toggleFavorite}
+            onEdit={setEditTarget}
           />
         ))}
       </div>
 
       <AddWorkoutModal
-        isOpen={addOpen}
-        onSave={data => { add(data); onCloseAdd() }}
-        onClose={onCloseAdd}
+        key={editTarget?.id ?? 'new'}
+        isOpen={addOpen || editTarget !== null}
+        workout={editTarget}
+        onSave={handleSave}
+        onClose={handleClose}
       />
     </>
   )

@@ -5,10 +5,12 @@ import { createExercise, MUSCLE_GROUPS } from '../utils/workout'
 
 const emptyExercises = () => [createExercise(0)]
 
-export default function AddWorkoutModal({ isOpen, onSave, onClose }) {
-  const [title, setTitle] = useState('')
-  const [tags, setTags] = useState([])
-  const [exercises, setExercises] = useState(emptyExercises)
+export default function AddWorkoutModal({ isOpen, workout = null, onSave, onClose }) {
+  const [title, setTitle] = useState(workout?.title ?? '')
+  const [tags, setTags] = useState(workout?.tags ?? [])
+  const [exercises, setExercises] = useState(
+    workout?.exercises?.length ? workout.exercises : emptyExercises()
+  )
 
   function toggleTag(tag) {
     setTags(prev =>
@@ -32,18 +34,6 @@ export default function AddWorkoutModal({ isOpen, onSave, onClose }) {
 
   function handleSave() {
     onSave({ title, tags, exercises })
-    reset()
-  }
-
-  function handleClose() {
-    reset()
-    onClose()
-  }
-
-  function reset() {
-    setTitle('')
-    setTags([])
-    setExercises(emptyExercises())
   }
 
   return (
@@ -55,7 +45,7 @@ export default function AddWorkoutModal({ isOpen, onSave, onClose }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
+            onClick={onClose}
           />
           <Motion.div
             className="fixed bottom-0 left-0 right-0 z-50 bg-bg rounded-t-3xl flex flex-col max-h-[90vh] md:max-w-2xl md:mx-auto lg:max-w-3xl xl:max-w-4xl"
@@ -65,8 +55,10 @@ export default function AddWorkoutModal({ isOpen, onSave, onClose }) {
             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
           >
             <div className="flex items-center justify-between px-6 pt-6 pb-4">
-              <h2 className="font-display text-2xl font-semibold text-strong">New Workout</h2>
-              <button onClick={handleClose} className="p-1.5 text-muted hover:text-strong transition-colors">
+              <h2 className="font-display text-2xl font-semibold text-strong">
+                {workout ? 'Edit Workout' : 'New Workout'}
+              </h2>
+              <button onClick={onClose} className="p-1.5 text-muted hover:text-strong transition-colors">
                 <X size={20} strokeWidth={1.75} />
               </button>
             </div>
@@ -159,7 +151,7 @@ export default function AddWorkoutModal({ isOpen, onSave, onClose }) {
 
             <div className="flex gap-3 px-6 py-5">
               <button
-                onClick={handleClose}
+                onClick={onClose}
                 className="flex-1 py-3 rounded-xl bg-surface text-muted text-sm hover:text-strong transition-colors"
               >
                 Cancel
