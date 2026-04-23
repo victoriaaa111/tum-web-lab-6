@@ -1,13 +1,10 @@
-import { Heart, Trash2 } from 'lucide-react'
+import { Heart, Pencil, Trash2 } from 'lucide-react'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export default function WorkoutCard({ workout, onRemove, onToggleFavorite }) {
-  const totalSets = workout.exercises.reduce((sum, e) => sum + e.sets, 0)
-  const summary = `${workout.exercises.length} exercise${workout.exercises.length !== 1 ? 's' : ''} · ${totalSets} sets`
-
+export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdit }) {
   return (
     <div className="bg-surface rounded-2xl p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
@@ -24,6 +21,12 @@ export default function WorkoutCard({ workout, onRemove, onToggleFavorite }) {
               strokeWidth={1.75}
               className={workout.favorite ? 'fill-accent text-accent' : ''}
             />
+          </button>
+          <button
+            onClick={() => onEdit(workout)}
+            className="p-1.5 rounded-full text-muted hover:text-strong transition-colors"
+          >
+            <Pencil size={18} strokeWidth={1.75} />
           </button>
           <button
             onClick={() => onRemove(workout.id)}
@@ -46,7 +49,16 @@ export default function WorkoutCard({ workout, onRemove, onToggleFavorite }) {
         </div>
       )}
 
-      <p className="text-sm text-muted">{summary}</p>
+      {workout.exercises.length > 0 && (
+        <div className="flex flex-col gap-1.5 pt-1">
+          {workout.exercises.map(e => (
+            <div key={e.id} className="flex items-center justify-between">
+              <span className="text-sm text-ink">{e.name || 'Unnamed'}</span>
+              <span className="text-xs text-muted">{e.sets} × {e.reps}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
