@@ -39,12 +39,12 @@
 /* Base */
 *, *::before, *::after {
   box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
   color: var(--text-primary);
   font-family: 'DM Sans', sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .textured {
@@ -52,4 +52,8 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
   background-blend-mode: multiply;
   background-size: 200px 200px;
+}
+
+.dark .textured {
+  background-color: #2a1f18;
 }
