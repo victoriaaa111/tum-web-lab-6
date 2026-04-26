@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createWorkout } from '../utils/workout'
+import { createWorkout, MUSCLE_GROUPS } from '../utils/workout'
 import WorkoutCard from './WorkoutCard'
 import AddWorkoutModal from './AddWorkoutModal'
 import FilterBar from './FilterBar'
@@ -15,8 +15,9 @@ function load() {
   }
 }
 
-export default function Workouts({ addOpen, onCloseAdd }) {
+export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
   const [workouts, setWorkouts] = useState(load)
+
   const [editTarget, setEditTarget] = useState(null)
   const [activeTags, setActiveTags] = useState([])
   const [favoritesOnly, setFavoritesOnly] = useState(false)
@@ -44,7 +45,28 @@ export default function Workouts({ addOpen, onCloseAdd }) {
 
   function importWorkouts(incoming) {
     const existingIds = new Set(workouts.map(w => w.id))
-    save([...workouts, ...incoming.filter(w => !existingIds.has(w.id))])
+    const now = new Date().toISOString()
+    const base = Date.now()
+    const merged = incoming
+      .filter(w => !existingIds.has(w.id))
+      .map((w, i) => ({ ...w, id: `${base}${i}`, createdAt: now }))
+    save([...workouts, ...merged])
+  }
+
+  function handleFileImport(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = evt => {
+      try {
+        const data = JSON.parse(evt.target.result)
+        if (Array.isArray(data)) importWorkouts(data)
+      } catch (err) {
+        console.error('Invalid JSON file', err)
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
   }
 
   function handleSave(data) {
@@ -64,7 +86,12 @@ export default function Workouts({ addOpen, onCloseAdd }) {
 
   const filtered = workouts
     .filter(w => !favoritesOnly || w.favorite)
-    .filter(w => activeTags.length === 0 || w.tags.some(t => activeTags.includes(t)))
+    .filter(w => {
+      if (activeTags.length === 0) return true
+      const hasDirectTag = w.tags.some(t => activeTags.includes(t))
+      const hasUnknownTag = activeTags.includes('Other') && w.tags.some(t => !MUSCLE_GROUPS.includes(t))
+      return hasDirectTag || hasUnknownTag
+    })
 
   function toggleTag(tag) {
     setActiveTags(prev =>
@@ -74,6 +101,7 @@ export default function Workouts({ addOpen, onCloseAdd }) {
 
   return (
     <>
+      <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileImport} className="hidden" />
       <FilterBar
         activeTags={activeTags}
         favoritesOnly={favoritesOnly}

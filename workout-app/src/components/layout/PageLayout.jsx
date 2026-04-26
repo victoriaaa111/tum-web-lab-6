@@ -1,7 +1,8 @@
 import { Moon, Plus, Sun } from 'lucide-react'
 import ExportButton from '../ExportButton'
+import ImportButton from '../ImportButton'
 
-function PageLayout({ onAddWorkout, onToggleTheme, isDark, children }) {
+function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, children }) {
   return (
     <div className="min-h-screen textured flex justify-center items-start py-6 px-4 md:py-10 md:px-8 transition-colors duration-300">
       <div className="
@@ -19,6 +20,7 @@ function PageLayout({ onAddWorkout, onToggleTheme, isDark, children }) {
             Workout Journal
           </h1>
           <div className="flex items-center gap-1">
+            <ImportButton onImportData={onImportData} />
             <ExportButton />
             <button
               onClick={onToggleTheme}

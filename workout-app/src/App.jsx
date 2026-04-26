@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PageLayout from './components/layout/PageLayout'
 import Workouts from './components/Workouts'
 
@@ -7,6 +7,7 @@ function App() {
     return localStorage.getItem('workout-journal-theme') === 'dark'
   })
   const [addOpen, setAddOpen] = useState(false)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
@@ -18,8 +19,13 @@ function App() {
       onToggleTheme={() => setIsDark(d => !d)}
       isDark={isDark}
       onAddWorkout={() => setAddOpen(true)}
+      onImportData={() => fileInputRef.current?.click()}
     >
-      <Workouts addOpen={addOpen} onCloseAdd={() => setAddOpen(false)} />
+      <Workouts
+        addOpen={addOpen}
+        onCloseAdd={() => setAddOpen(false)}
+        fileInputRef={fileInputRef}
+      />
     </PageLayout>
   )
 }
