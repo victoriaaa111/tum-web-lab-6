@@ -68,11 +68,11 @@ export default function Workouts({ addOpen, onCloseAdd }) {
 
   return (
     <>
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-6 px-6 mb-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-2 bg-surface rounded-2xl p-1">
         <button
           onClick={() => setFavoritesOnly(f => !f)}
           className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-colors ${
-            favoritesOnly ? 'bg-strong text-bg' : 'bg-surface text-muted hover:text-strong'
+            favoritesOnly ? 'bg-strong text-bg' : 'bg-accent text-strong'
           }`}
         >
           <Heart size={12} strokeWidth={2} className={favoritesOnly ? 'fill-bg' : ''} />
@@ -83,7 +83,7 @@ export default function Workouts({ addOpen, onCloseAdd }) {
             key={tag}
             onClick={() => setActiveTag(t => t === tag ? null : tag)}
             className={`shrink-0 text-xs px-3 py-1.5 rounded-full transition-colors ${
-              activeTag === tag ? 'bg-strong text-bg' : 'bg-surface text-muted hover:text-strong'
+              activeTag === tag ? 'bg-strong text-bg' : 'bg-accent text-strong'
             }`}
           >
             {tag}
