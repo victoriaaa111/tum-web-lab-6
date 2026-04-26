@@ -1,4 +1,5 @@
 import { Moon, Plus, Sun } from 'lucide-react'
+import ExportButton from '../ExportButton'
 
 function PageLayout({ onAddWorkout, onToggleTheme, isDark, children }) {
   return (
@@ -17,13 +18,16 @@ function PageLayout({ onAddWorkout, onToggleTheme, isDark, children }) {
           <h1 className="font-display text-3xl font-semibold tracking-tight text-strong lg:text-4xl">
             Workout Journal
           </h1>
-          <button
-            onClick={onToggleTheme}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-strong transition-colors"
-            aria-label="Toggle theme"
-          >
-            {isDark ? <Sun size={20} strokeWidth={1.75} /> : <Moon size={20} strokeWidth={1.75} />}
-          </button>
+          <div className="flex items-center gap-1">
+            <ExportButton />
+            <button
+              onClick={onToggleTheme}
+              className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-strong transition-colors"
+              aria-label="Toggle theme"
+            >
+              {isDark ? <Sun size={20} strokeWidth={1.75} /> : <Moon size={20} strokeWidth={1.75} />}
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 px-6 pb-28 lg:px-10">
