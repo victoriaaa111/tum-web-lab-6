@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Heart } from 'lucide-react'
-import { createWorkout, MUSCLE_GROUPS } from '../utils/workout'
+import { createWorkout } from '../utils/workout'
 import WorkoutCard from './WorkoutCard'
 import AddWorkoutModal from './AddWorkoutModal'
+import FilterBar from './FilterBar'
 
 const KEY = 'workout-journal-workouts'
 
@@ -74,28 +74,12 @@ export default function Workouts({ addOpen, onCloseAdd }) {
 
   return (
     <>
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-2 bg-surface rounded-2xl p-1">
-        <button
-          onClick={() => setFavoritesOnly(f => !f)}
-          className={`shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-colors ${
-            favoritesOnly ? 'bg-strong text-bg' : 'bg-accent text-strong'
-          }`}
-        >
-          <Heart size={12} strokeWidth={2} className={favoritesOnly ? 'fill-bg' : ''} />
-          Favorites
-        </button>
-        {MUSCLE_GROUPS.map(tag => (
-          <button
-            key={tag}
-            onClick={() => toggleTag(tag)}
-            className={`shrink-0 text-xs px-3 py-1.5 rounded-full transition-colors ${
-              activeTags.includes(tag) ? 'bg-strong text-bg' : 'bg-accent text-strong'
-            }`}
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
+      <FilterBar
+        activeTags={activeTags}
+        favoritesOnly={favoritesOnly}
+        onToggleTag={toggleTag}
+        onToggleFavorites={() => setFavoritesOnly(f => !f)}
+      />
 
       <div className="flex flex-col gap-4">
         {filtered.map(workout => (
