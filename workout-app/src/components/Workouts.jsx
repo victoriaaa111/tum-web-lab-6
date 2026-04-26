@@ -18,7 +18,7 @@ function load() {
 export default function Workouts({ addOpen, onCloseAdd }) {
   const [workouts, setWorkouts] = useState(load)
   const [editTarget, setEditTarget] = useState(null)
-  const [activeTag, setActiveTag] = useState(null)
+  const [activeTags, setActiveTags] = useState([])
   const [favoritesOnly, setFavoritesOnly] = useState(false)
 
   function save(updated) {
@@ -64,7 +64,13 @@ export default function Workouts({ addOpen, onCloseAdd }) {
 
   const filtered = workouts
     .filter(w => !favoritesOnly || w.favorite)
-    .filter(w => !activeTag || w.tags.includes(activeTag))
+    .filter(w => activeTags.length === 0 || w.tags.some(t => activeTags.includes(t)))
+
+  function toggleTag(tag) {
+    setActiveTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    )
+  }
 
   return (
     <>
@@ -81,9 +87,9 @@ export default function Workouts({ addOpen, onCloseAdd }) {
         {MUSCLE_GROUPS.map(tag => (
           <button
             key={tag}
-            onClick={() => setActiveTag(t => t === tag ? null : tag)}
+            onClick={() => toggleTag(tag)}
             className={`shrink-0 text-xs px-3 py-1.5 rounded-full transition-colors ${
-              activeTag === tag ? 'bg-strong text-bg' : 'bg-accent text-strong'
+              activeTags.includes(tag) ? 'bg-strong text-bg' : 'bg-accent text-strong'
             }`}
           >
             {tag}
