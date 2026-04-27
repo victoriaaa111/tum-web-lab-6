@@ -34,6 +34,9 @@ export default function AddWorkoutModal({ isOpen, workout = null, onSave, onClos
 
   function handleSave() {
     onSave({ title, tags, exercises })
+    setTitle('')
+    setTags([])
+    setExercises(emptyExercises())
   }
 
   return (
