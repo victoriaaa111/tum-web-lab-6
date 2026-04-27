@@ -110,3 +110,9 @@ A mobile-first web app for logging and managing gym workouts. Built with React, 
 - Framer Motion for animations
 - Lucide React for icons
 - localStorage (no backend)
+
+---
+
+## Deployed link
+
+https://victoriaaa111.github.io/tum-web-lab-6/
