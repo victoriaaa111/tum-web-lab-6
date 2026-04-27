@@ -78,9 +78,14 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
     setActiveSession({
       id: String(base),
       workoutTitle: workout.title || 'Untitled',
+      tags: workout.tags ?? [],
       startedAt: new Date().toISOString(),
       exercises: workout.exercises.map((e, i) => ({ ...e, id: `${base}_${i}`, completed: false })),
     })
+  }
+
+  function removeSession(id) {
+    saveSessions(sessions.filter(s => s.id !== id))
   }
 
   function finishSession(completed) {
@@ -178,7 +183,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
           </div>
         </>
       ) : (
-        <SessionHistory sessions={sessions} />
+        <SessionHistory sessions={sessions} onRemove={removeSession} />
       )}
 
       <AddWorkoutModal
