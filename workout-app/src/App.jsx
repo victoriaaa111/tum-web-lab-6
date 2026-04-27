@@ -7,6 +7,7 @@ function App() {
     return localStorage.getItem('workout-journal-theme') === 'dark'
   })
   const [addOpen, setAddOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('workouts')
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -20,11 +21,14 @@ function App() {
       isDark={isDark}
       onAddWorkout={() => setAddOpen(true)}
       onImportData={() => fileInputRef.current?.click()}
+      showFab={activeTab === 'workouts'}
     >
       <Workouts
         addOpen={addOpen}
         onCloseAdd={() => setAddOpen(false)}
         fileInputRef={fileInputRef}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
     </PageLayout>
   )

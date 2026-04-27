@@ -2,7 +2,7 @@ import { Moon, Plus, Sun } from 'lucide-react'
 import ExportButton from '../ExportButton'
 import ImportButton from '../ImportButton'
 
-function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, children }) {
+function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, showFab, children }) {
   return (
     <div className="min-h-screen textured flex justify-center items-start py-6 px-4 md:py-10 md:px-8 transition-colors duration-300">
       <div className="
@@ -36,12 +36,14 @@ function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, childre
           {children}
         </main>
 
-        <button
-          onClick={onAddWorkout}
-          className="absolute bottom-8 right-6 w-14 h-14 rounded-full bg-strong text-bg flex items-center justify-center shadow-lg active:scale-95 transition-transform lg:right-10 lg:bottom-10 lg:w-16 lg:h-16"
-        >
-          <Plus size={24} strokeWidth={2} />
-        </button>
+        {showFab && (
+          <button
+            onClick={onAddWorkout}
+            className="absolute bottom-8 right-6 w-14 h-14 rounded-full bg-strong text-bg flex items-center justify-center shadow-lg active:scale-95 transition-transform lg:right-10 lg:bottom-10 lg:w-16 lg:h-16"
+          >
+            <Plus size={24} strokeWidth={2} />
+          </button>
+        )}
 
       </div>
     </div>

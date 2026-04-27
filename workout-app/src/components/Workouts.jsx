@@ -28,14 +28,14 @@ function loadSessions() {
   }
 }
 
-export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
+export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab, onTabChange }) {
   const [workouts, setWorkouts] = useState(load)
   const [sessions, setSessions] = useState(loadSessions)
   const [activeSession, setActiveSession] = useState(null)
-  const [activeTab, setActiveTab] = useState('workouts')
   const [editTarget, setEditTarget] = useState(null)
   const [activeTags, setActiveTags] = useState([])
   const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const [historyActiveTags, setHistoryActiveTags] = useState([])
 
   function save(updated) {
     setWorkouts(updated)
@@ -91,7 +91,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
   function finishSession(completed) {
     saveSessions([completed, ...sessions])
     setActiveSession(null)
-    setActiveTab('history')
+    onTabChange('history')
   }
 
   function handleSave(data) {
@@ -118,8 +118,21 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
       return hasDirectTag || hasUnknownTag
     })
 
+  const filteredSessions = sessions.filter(s => {
+    if (historyActiveTags.length === 0) return true
+    const hasDirectTag = s.tags?.some(t => historyActiveTags.includes(t))
+    const hasUnknownTag = historyActiveTags.includes('Other') && s.tags?.some(t => !MUSCLE_GROUPS.includes(t))
+    return hasDirectTag || hasUnknownTag
+  })
+
   function toggleTag(tag) {
     setActiveTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    )
+  }
+
+  function toggleHistoryTag(tag) {
+    setHistoryActiveTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     )
   }
@@ -144,7 +157,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
 
       <div className="flex gap-1 bg-surface rounded-2xl p-1 mb-4">
         <button
-          onClick={() => setActiveTab('workouts')}
+          onClick={() => onTabChange('workouts')}
           className={`flex-1 py-1.5 text-sm rounded-xl transition-colors ${
             activeTab === 'workouts' ? 'bg-bg text-strong' : 'text-muted'
           }`}
@@ -152,7 +165,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
           Workouts
         </button>
         <button
-          onClick={() => setActiveTab('history')}
+          onClick={() => onTabChange('history')}
           className={`flex-1 py-1.5 text-sm rounded-xl transition-colors ${
             activeTab === 'history' ? 'bg-bg text-strong' : 'text-muted'
           }`}
@@ -183,7 +196,16 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
           </div>
         </>
       ) : (
-        <SessionHistory sessions={sessions} onRemove={removeSession} />
+        <>
+          <FilterBar
+            activeTags={historyActiveTags}
+            favoritesOnly={false}
+            onToggleTag={toggleHistoryTag}
+            onToggleFavorites={() => {}}
+            showFavorites={false}
+          />
+          <SessionHistory sessions={filteredSessions} onRemove={removeSession} />
+        </>
       )}
 
       <AddWorkoutModal
