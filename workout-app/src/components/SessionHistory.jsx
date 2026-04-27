@@ -65,7 +65,7 @@ export default function SessionHistory({ sessions, onRemove }) {
                 key={e.id}
                 className={`flex items-center justify-between ${e.completed ? '' : 'opacity-40'}`}
               >
-                <span className={`text-sm ${e.completed ? 'text-ink' : 'text-muted line-through'}`}>
+                <span className={`text-sm ${e.completed ? 'line-through text-muted' : 'text-ink'}`}>
                   {e.name || 'Unnamed'}
                 </span>
                 <span className="text-xs text-muted">{e.sets} × {e.reps}</span>

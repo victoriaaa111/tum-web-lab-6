@@ -73,6 +73,16 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
     save([...workouts, ...merged])
   }
 
+  function importSessions(incoming) {
+    const existingIds = new Set(sessions.map(s => s.id))
+    const now = new Date().toISOString()
+    const base = Date.now()
+    const merged = incoming
+      .filter(s => !existingIds.has(s.id))
+      .map((s, i) => ({ ...s, id: `${base}${i}`, finishedAt: s.finishedAt ?? now }))
+    saveSessions([...sessions, ...merged])
+  }
+
   function startSession(workout) {
     const base = Date.now()
     setActiveSession({
@@ -146,7 +156,9 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
         reader.onload = evt => {
           try {
             const data = JSON.parse(evt.target.result)
-            if (Array.isArray(data)) importWorkouts(data)
+            if (!Array.isArray(data) || data.length === 0) return
+            if (data[0].finishedAt !== undefined) importSessions(data)
+            else importWorkouts(data)
           } catch (err) {
             console.error('Invalid JSON file', err)
           }
