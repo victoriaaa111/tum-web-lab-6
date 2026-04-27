@@ -1,10 +1,14 @@
 import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { createWorkout, MUSCLE_GROUPS } from '../utils/workout'
 import WorkoutCard from './WorkoutCard'
 import AddWorkoutModal from './AddWorkoutModal'
 import FilterBar from './FilterBar'
+import ActiveSession from './ActiveSession'
+import SessionHistory from './SessionHistory'
 
 const KEY = 'workout-journal-workouts'
+const SESSIONS_KEY = 'workout-journal-sessions'
 
 function load() {
   try {
@@ -15,9 +19,20 @@ function load() {
   }
 }
 
+function loadSessions() {
+  try {
+    const stored = localStorage.getItem(SESSIONS_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
 export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
   const [workouts, setWorkouts] = useState(load)
-
+  const [sessions, setSessions] = useState(loadSessions)
+  const [activeSession, setActiveSession] = useState(null)
+  const [activeTab, setActiveTab] = useState('workouts')
   const [editTarget, setEditTarget] = useState(null)
   const [activeTags, setActiveTags] = useState([])
   const [favoritesOnly, setFavoritesOnly] = useState(false)
@@ -25,6 +40,11 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
   function save(updated) {
     setWorkouts(updated)
     localStorage.setItem(KEY, JSON.stringify(updated))
+  }
+
+  function saveSessions(updated) {
+    setSessions(updated)
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(updated))
   }
 
   function add(data = {}) {
@@ -53,20 +73,20 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
     save([...workouts, ...merged])
   }
 
-  function handleFileImport(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = evt => {
-      try {
-        const data = JSON.parse(evt.target.result)
-        if (Array.isArray(data)) importWorkouts(data)
-      } catch (err) {
-        console.error('Invalid JSON file', err)
-      }
-    }
-    reader.readAsText(file)
-    e.target.value = ''
+  function startSession(workout) {
+    const base = Date.now()
+    setActiveSession({
+      id: String(base),
+      workoutTitle: workout.title || 'Untitled',
+      startedAt: new Date().toISOString(),
+      exercises: workout.exercises.map((e, i) => ({ ...e, id: `${base}_${i}`, completed: false })),
+    })
+  }
+
+  function finishSession(completed) {
+    saveSessions([completed, ...sessions])
+    setActiveSession(null)
+    setActiveTab('history')
   }
 
   function handleSave(data) {
@@ -101,25 +121,65 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
 
   return (
     <>
-      <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileImport} className="hidden" />
-      <FilterBar
-        activeTags={activeTags}
-        favoritesOnly={favoritesOnly}
-        onToggleTag={toggleTag}
-        onToggleFavorites={() => setFavoritesOnly(f => !f)}
-      />
+      <input ref={fileInputRef} type="file" accept=".json" onChange={e => {
+        const file = e.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = evt => {
+          try {
+            const data = JSON.parse(evt.target.result)
+            if (Array.isArray(data)) importWorkouts(data)
+          } catch (err) {
+            console.error('Invalid JSON file', err)
+          }
+        }
+        reader.readAsText(file)
+        e.target.value = ''
+      }} className="hidden" />
 
-      <div className="flex flex-col gap-4">
-        {filtered.map(workout => (
-          <WorkoutCard
-            key={workout.id}
-            workout={workout}
-            onRemove={remove}
-            onToggleFavorite={toggleFavorite}
-            onEdit={setEditTarget}
-          />
-        ))}
+      <div className="flex gap-1 bg-surface rounded-2xl p-1 mb-4">
+        <button
+          onClick={() => setActiveTab('workouts')}
+          className={`flex-1 py-1.5 text-sm rounded-xl transition-colors ${
+            activeTab === 'workouts' ? 'bg-bg text-strong' : 'text-muted'
+          }`}
+        >
+          Workouts
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`flex-1 py-1.5 text-sm rounded-xl transition-colors ${
+            activeTab === 'history' ? 'bg-bg text-strong' : 'text-muted'
+          }`}
+        >
+          History
+        </button>
       </div>
+
+      {activeTab === 'workouts' ? (
+        <>
+          <FilterBar
+            activeTags={activeTags}
+            favoritesOnly={favoritesOnly}
+            onToggleTag={toggleTag}
+            onToggleFavorites={() => setFavoritesOnly(f => !f)}
+          />
+          <div className="flex flex-col gap-4">
+            {filtered.map(workout => (
+              <WorkoutCard
+                key={workout.id}
+                workout={workout}
+                onRemove={remove}
+                onToggleFavorite={toggleFavorite}
+                onEdit={setEditTarget}
+                onStart={startSession}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <SessionHistory sessions={sessions} />
+      )}
 
       <AddWorkoutModal
         key={editTarget?.id ?? 'new'}
@@ -128,6 +188,16 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef }) {
         onSave={handleSave}
         onClose={handleClose}
       />
+
+      <AnimatePresence>
+        {activeSession && (
+          <ActiveSession
+            session={activeSession}
+            onFinish={finishSession}
+            onClose={() => setActiveSession(null)}
+          />
+        )}
+      </AnimatePresence>
     </>
   )
 }

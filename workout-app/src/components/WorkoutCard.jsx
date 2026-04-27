@@ -1,10 +1,10 @@
-import { Heart, Pencil, Trash2 } from 'lucide-react'
+import { Heart, Pencil, Play, Trash2 } from 'lucide-react'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdit }) {
+export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdit, onStart }) {
   return (
     <div className="bg-surface rounded-2xl p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
@@ -59,6 +59,14 @@ export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdi
           ))}
         </div>
       )}
+
+      <button
+        onClick={() => onStart(workout)}
+        className="flex items-center gap-1.5 text-xs text-muted hover:text-strong transition-colors self-start pt-1"
+      >
+        <Play size={13} strokeWidth={1.75} />
+        Start workout
+      </button>
     </div>
   )
 }
