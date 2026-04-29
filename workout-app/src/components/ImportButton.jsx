@@ -17,7 +17,7 @@ export default function ImportButton({ onImportData }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-11 z-50 bg-bg border border-border rounded-2xl p-4 w-80 shadow-lg flex flex-col gap-4">
+          <div className="fixed inset-x-4 bottom-4 z-50 md:absolute md:inset-auto md:right-0 md:top-11 md:w-80 bg-bg border border-border rounded-2xl p-4 shadow-lg flex flex-col gap-4 max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col gap-2">
               <p className="text-xs font-medium text-strong">Workouts</p>
               <pre className="text-xs text-ink bg-surface rounded-xl p-3 overflow-x-auto leading-relaxed">{`[{
