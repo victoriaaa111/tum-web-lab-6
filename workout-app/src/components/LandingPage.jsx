@@ -38,9 +38,15 @@ export default function LandingPage({ onLogin, onSignup, onToggleTheme, isDark }
           <div className="flex items-center gap-2">
             <button
               onClick={onLogin}
-              className="text-sm text-muted hover:text-strong transition-colors px-3 py-1.5 rounded-xl"
+              className="text-sm text-muted hover:text-strong transition-colors px-3 py-1.5"
             >
               Log in
+            </button>
+            <button
+              onClick={onSignup}
+              className="text-sm px-4 py-1.5 rounded-xl bg-strong text-bg font-medium active:scale-95 transition-transform"
+            >
+              Sign up
             </button>
             <button
               onClick={onToggleTheme}

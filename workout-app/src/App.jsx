@@ -9,7 +9,8 @@ function App() {
   })
   const [addOpen, setAddOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('workouts')
-  const [showLanding, setShowLanding] = useState(true)
+  const [user, setUser] = useState(null)
+  const [authChecked, setAuthChecked] = useState(false)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -17,15 +18,24 @@ function App() {
     localStorage.setItem('workout-journal-theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { setUser(data); setAuthChecked(true) })
+      .catch(() => setAuthChecked(true))
+  }, [])
+
   const toggleTheme = () => setIsDark(d => !d)
 
-  if (showLanding) {
+  if (!authChecked) return null
+
+  if (!user) {
     return (
       <LandingPage
         isDark={isDark}
         onToggleTheme={toggleTheme}
-        onLogin={() => setShowLanding(false)}
-        onSignup={() => setShowLanding(false)}
+        onLogin={setUser}
+        onSignup={setUser}
       />
     )
   }
