@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { motion as Motion } from 'framer-motion'
 import { Activity, Dumbbell, ListChecks, Moon, Sun } from 'lucide-react'
+import LoginPage from './LoginPage'
+import SignupPage from './SignupPage'
 
 const FEATURES = [
   {
@@ -20,6 +23,9 @@ const FEATURES = [
 ]
 
 export default function LandingPage({ onLogin, onSignup, onToggleTheme, isDark }) {
+  const [loginOpen, setLoginOpen] = useState(false)
+  const [signupOpen, setSignupOpen] = useState(false)
+
   return (
     <div className="min-h-screen textured flex justify-center items-start py-6 px-4 md:py-10 md:px-8 transition-colors duration-300">
       <div className="
@@ -37,13 +43,13 @@ export default function LandingPage({ onLogin, onSignup, onToggleTheme, isDark }
           </h1>
           <div className="flex items-center gap-2">
             <button
-              onClick={onLogin}
+              onClick={() => setLoginOpen(true)}
               className="text-sm text-muted hover:text-strong transition-colors px-3 py-1.5"
             >
               Log in
             </button>
             <button
-              onClick={onSignup}
+              onClick={() => setSignupOpen(true)}
               className="text-sm px-4 py-1.5 rounded-xl bg-strong text-bg font-medium active:scale-95 transition-transform"
             >
               Sign up
@@ -77,13 +83,13 @@ export default function LandingPage({ onLogin, onSignup, onToggleTheme, isDark }
             </p>
             <div className="flex gap-3">
               <button
-                onClick={onSignup}
+                onClick={() => setSignupOpen(true)}
                 className="px-6 py-2.5 rounded-xl bg-strong text-bg text-sm font-medium active:scale-95 transition-transform"
               >
                 Get started
               </button>
               <button
-                onClick={onLogin}
+                onClick={() => setLoginOpen(true)}
                 className="px-6 py-2.5 rounded-xl border border-border text-strong text-sm font-medium active:scale-95 transition-transform"
               >
                 Log in
@@ -123,6 +129,19 @@ export default function LandingPage({ onLogin, onSignup, onToggleTheme, isDark }
 
         </main>
       </div>
+
+      <LoginPage
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={onLogin}
+        onSwitchToSignup={() => setSignupOpen(true)}
+      />
+      <SignupPage
+        isOpen={signupOpen}
+        onClose={() => setSignupOpen(false)}
+        onSuccess={onSignup}
+        onSwitchToLogin={() => setLoginOpen(true)}
+      />
     </div>
   )
 }
