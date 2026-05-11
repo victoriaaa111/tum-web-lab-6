@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import PageLayout from './components/layout/PageLayout'
 import Workouts from './components/Workouts'
+import LandingPage from './components/LandingPage'
 
 function App() {
   const [isDark, setIsDark] = useState(() => {
@@ -8,6 +9,7 @@ function App() {
   })
   const [addOpen, setAddOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('workouts')
+  const [showLanding, setShowLanding] = useState(true)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -15,9 +17,22 @@ function App() {
     localStorage.setItem('workout-journal-theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
+  const toggleTheme = () => setIsDark(d => !d)
+
+  if (showLanding) {
+    return (
+      <LandingPage
+        isDark={isDark}
+        onToggleTheme={toggleTheme}
+        onLogin={() => setShowLanding(false)}
+        onSignup={() => setShowLanding(false)}
+      />
+    )
+  }
+
   return (
     <PageLayout
-      onToggleTheme={() => setIsDark(d => !d)}
+      onToggleTheme={toggleTheme}
       isDark={isDark}
       onAddWorkout={() => setAddOpen(true)}
       onImportData={() => fileInputRef.current?.click()}
