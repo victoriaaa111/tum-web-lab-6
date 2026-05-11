@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
 import { X } from 'lucide-react'
+import { login } from '../services/authApi'
 
 export default function LoginPage({ isOpen, onClose, onSuccess, onSwitchToSignup }) {
   const [email, setEmail] = useState('')
@@ -13,8 +14,8 @@ export default function LoginPage({ isOpen, onClose, onSuccess, onSwitchToSignup
     setError('')
     setLoading(true)
     try {
-      // replaced by authApi.login() in next commit
-      onSuccess({ id: 'stub', username: email, role: 'WRITER' })
+      const user = await login(email, password)
+      onSuccess(user)
     } catch {
       setError('Invalid email or password.')
     } finally {
