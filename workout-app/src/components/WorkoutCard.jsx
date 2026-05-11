@@ -51,8 +51,8 @@ export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdi
 
       {workout.exercises.length > 0 && (
         <div className="flex flex-col gap-1.5 pt-1">
-          {workout.exercises.map(e => (
-            <div key={e.id} className="flex items-center justify-between">
+          {workout.exercises.map((e, i) => (
+            <div key={e.id ?? i} className="flex items-center justify-between">
               <span className="text-sm text-ink">{e.name || 'Unnamed'}</span>
               <span className="text-xs text-muted">{e.sets} × {e.reps}</span>
             </div>

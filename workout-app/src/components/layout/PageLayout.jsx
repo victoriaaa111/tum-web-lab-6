@@ -1,8 +1,8 @@
-import { Moon, Plus, Sun } from 'lucide-react'
+import { LogOut, Moon, Plus, Sun } from 'lucide-react'
 import ExportButton from '../ExportButton'
 import ImportButton from '../ImportButton'
 
-function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, showFab, children }) {
+function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, onLogout, showFab, children }) {
   return (
     <div className="min-h-screen textured flex justify-center items-start py-6 px-4 md:py-10 md:px-8 transition-colors duration-300">
       <div className="
@@ -28,6 +28,13 @@ function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, showFab
               aria-label="Toggle theme"
             >
               {isDark ? <Sun size={20} strokeWidth={1.75} /> : <Moon size={20} strokeWidth={1.75} />}
+            </button>
+            <button
+              onClick={onLogout}
+              className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-strong transition-colors"
+              aria-label="Log out"
+            >
+              <LogOut size={20} strokeWidth={1.75} />
             </button>
           </div>
         </header>
