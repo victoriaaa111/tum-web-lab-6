@@ -65,6 +65,7 @@ export default function SignupPage({ isOpen, onClose, onSuccess, onSwitchToLogin
                   value={username}
                   onChange={e => setUsername(e.target.value)}
                   placeholder="e.g. alice"
+                  autoComplete="username"
                   required
                   className="bg-surface rounded-xl px-4 py-3 text-strong text-sm outline-none placeholder:text-muted w-full"
                 />
@@ -77,6 +78,7 @@ export default function SignupPage({ isOpen, onClose, onSuccess, onSwitchToLogin
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  autoComplete="email"
                   required
                   className="bg-surface rounded-xl px-4 py-3 text-strong text-sm outline-none placeholder:text-muted w-full"
                 />
@@ -89,6 +91,7 @@ export default function SignupPage({ isOpen, onClose, onSuccess, onSwitchToLogin
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   required
                   className="bg-surface rounded-xl px-4 py-3 text-strong text-sm outline-none placeholder:text-muted w-full"
                 />

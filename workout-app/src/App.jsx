@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import PageLayout from './components/layout/PageLayout'
 import Workouts from './components/Workouts'
 import LandingPage from './components/LandingPage'
-import { useAuth } from './context/AuthContext'
+import { useAuth } from './context/useAuth'
 
 function App() {
-  const { user, setUser, authChecked } = useAuth()
+  const { user, setUser, authChecked, logout } = useAuth()
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem('workout-journal-theme') === 'dark'
   })
@@ -39,6 +39,7 @@ function App() {
       isDark={isDark}
       onAddWorkout={() => setAddOpen(true)}
       onImportData={() => fileInputRef.current?.click()}
+      onLogout={logout}
       showFab={activeTab === 'workouts'}
     >
       <Workouts
