@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion as Motion } from 'framer-motion'
 import { X } from 'lucide-react'
+import { signup } from '../services/authApi'
 
 export default function SignupPage({ isOpen, onClose, onSuccess, onSwitchToLogin }) {
   const [username, setUsername] = useState('')
@@ -14,8 +15,8 @@ export default function SignupPage({ isOpen, onClose, onSuccess, onSwitchToLogin
     setError('')
     setLoading(true)
     try {
-      // replaced by authApi.signup() in next commit
-      onSuccess({ id: 'stub', username, role: 'WRITER' })
+      const user = await signup(username, email, password)
+      onSuccess(user)
     } catch {
       setError('Could not create account. Try a different email.')
     } finally {

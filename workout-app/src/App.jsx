@@ -2,28 +2,21 @@ import { useEffect, useRef, useState } from 'react'
 import PageLayout from './components/layout/PageLayout'
 import Workouts from './components/Workouts'
 import LandingPage from './components/LandingPage'
+import { useAuth } from './context/AuthContext'
 
 function App() {
+  const { user, setUser, authChecked } = useAuth()
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem('workout-journal-theme') === 'dark'
   })
   const [addOpen, setAddOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('workouts')
-  const [user, setUser] = useState(null)
-  const [authChecked, setAuthChecked] = useState(false)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
     localStorage.setItem('workout-journal-theme', isDark ? 'dark' : 'light')
   }, [isDark])
-
-  useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { setUser(data); setAuthChecked(true) })
-      .catch(() => setAuthChecked(true))
-  }, [])
 
   const toggleTheme = () => setIsDark(d => !d)
 
