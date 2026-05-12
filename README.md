@@ -1,6 +1,6 @@
 # Workout Journal
 
-A mobile-first web app for logging and managing gym workouts. Built with React, Vite, and Tailwind CSS. All data is stored locally in the browser.
+A mobile-first web app for logging and managing gym workouts. Built with React, Vite, Tailwind CSS, and a Node.js/Express/PostgreSQL backend.
 
 ---
 
@@ -16,15 +16,32 @@ A mobile-first web app for logging and managing gym workouts. Built with React, 
 - **Session history** - view all past sessions with date, duration, muscle groups, and exercise results
 - **Filter history** - narrow past sessions by muscle group tag
 - **Export** - download workouts or session history as separate `.json` files
-- **Import** - load workouts or session history from a `.json` file; type is auto-detected
-- **Light / Dark theme** - toggle between a light mode and a dark mode; preference is saved to localStorage
+- **Import** - load workouts or session history from a `.json` file; type is auto-detected; shows imported/skipped count after
+- **Light / Dark theme** - toggle between light and dark mode; preference is saved locally
+- **Accounts** - sign up and log in; data is scoped to your account
+- **Role-based access** - three roles: VISITOR (read-only), WRITER (full access), ADMIN (manage all users)
+- **Admin dashboard** - paginated user list with inline role editing and user deletion; drill down into any user's workouts and sessions
+
+---
+
+## Roles
+
+| Action | VISITOR | WRITER | ADMIN |
+|---|---|---|---|
+| View workouts & history | ✓ | ✓ | ✓ |
+| Export data | ✓ | ✓ | ✓ |
+| Create / edit / delete workouts | — | ✓ | ✓ |
+| Favorite workouts | — | ✓ | ✓ |
+| Track sessions | — | ✓ | ✓ |
+| Import data | — | ✓ | ✓ |
+| Admin dashboard | — | — | ✓ |
 
 ---
 
 ## User Flows
 
 ### Adding a workout
-1. Tap the **+** button (bottom-right of the card)
+1. Tap the **+** button (bottom-right of the screen)
 2. Enter a title and select muscle group tags
 3. Add exercises: each row has a name, sets, and reps
 4. Tap **Save**
@@ -47,7 +64,7 @@ A mobile-first web app for logging and managing gym workouts. Built with React, 
 
 ### Viewing session history
 - Switch to the **History** tab to see all past sessions
-- Each card shows the workout name, date, start/end time, total duration, muscle groups, and whether you did the exercises or not
+- Each card shows the workout name, date, start/end time, total duration, muscle groups, and exercise results
 - Completed exercises are shown with a strikethrough
 - Tap the **trash icon** on a session card to delete it
 - Use the **filter chips** at the top to filter sessions by muscle group
@@ -62,7 +79,13 @@ A mobile-first web app for logging and managing gym workouts. Built with React, 
 2. Review the expected formats shown in the popover
 3. Tap **Choose file** and select a `.json` file
 4. The file type is auto-detected: arrays with `finishedAt` are treated as history, everything else as workouts
-5. Entries are merged with existing data;
+5. Entries are merged with existing data; a summary shows how many were imported and how many were skipped (duplicates)
+
+### Admin dashboard
+1. Log in as a user with the **ADMIN** role
+2. Tap the **shield icon** in the header to open the dashboard
+3. Browse the paginated user list — change any user's role with the inline dropdown, or delete them
+4. Tap a username to drill into their workouts and sessions
 
 ---
 
@@ -109,7 +132,9 @@ A mobile-first web app for logging and managing gym workouts. Built with React, 
 - Tailwind CSS v4
 - Framer Motion for animations
 - Lucide React for icons
-- localStorage (no backend)
+- React Query for server state
+- Node.js + Express backend
+- PostgreSQL database
 
 ---
 
