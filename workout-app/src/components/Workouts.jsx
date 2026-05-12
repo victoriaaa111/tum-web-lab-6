@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { listWorkouts, createWorkout, updateWorkout, deleteWorkout } from '../services/workoutsApi'
+import { listWorkouts, createWorkout, updateWorkout, deleteWorkout, importWorkouts as importWorkoutsApi } from '../services/workoutsApi'
 import { listSessions, createSession, deleteSession } from '../services/sessionsApi'
 import WorkoutCard from './WorkoutCard'
 import AddWorkoutModal from './AddWorkoutModal'
@@ -98,6 +98,10 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
     mutationFn: createWorkout,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
   })
+  const importWorkoutsMutation = useMutation({
+    mutationFn: importWorkoutsApi,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
+  })
   const updateWorkoutMutation = useMutation({
     mutationFn: ({ id, data }) => updateWorkout(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
@@ -116,7 +120,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
   })
 
   function importWorkouts(incoming) {
-    incoming.forEach(w => createWorkoutMutation.mutate({ title: w.title, tags: w.tags ?? [], exercises: w.exercises ?? [] }))
+    importWorkoutsMutation.mutate(incoming)
   }
 
   function importSessions(incoming) {

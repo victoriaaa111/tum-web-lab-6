@@ -18,3 +18,7 @@ export function updateWorkout(id, data) {
 export function deleteWorkout(id) {
   return apiRequest(`/workouts/${id}`, { method: 'DELETE' })
 }
+
+export function importWorkouts(data) {
+  return apiRequest('/workouts/import', { method: 'POST', body: JSON.stringify(data) })
+}
