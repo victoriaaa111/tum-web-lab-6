@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -57,6 +57,13 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [sessionPage, setSessionPage] = useState(0)
+  const [importResult, setImportResult] = useState(null)
+
+  useEffect(() => {
+    if (!importResult) return
+    const t = setTimeout(() => setImportResult(null), 4000)
+    return () => clearTimeout(t)
+  }, [importResult])
 
   const workoutFilters = { page, size: PAGE_SIZE, tags: activeTags, ...(favoritesOnly && { favorite: true }) }
   const sessionFilters = {
@@ -100,7 +107,10 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
   })
   const importWorkoutsMutation = useMutation({
     mutationFn: importWorkoutsApi,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['workouts'] })
+      setImportResult(data)
+    },
   })
   const updateWorkoutMutation = useMutation({
     mutationFn: ({ id, data }) => updateWorkout(id, data),
@@ -116,7 +126,10 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
   })
   const importSessionsMutation = useMutation({
     mutationFn: importSessionsApi,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      setImportResult(data)
+    },
   })
   const deleteSessionMutation = useMutation({
     mutationFn: deleteSession,
@@ -217,6 +230,12 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
           History
         </button>
       </div>
+
+      {importResult && (
+        <p className="text-xs text-muted text-center mb-3">
+          Imported {importResult.imported}, skipped {importResult.skipped}
+        </p>
+      )}
 
       {activeTab === 'workouts' ? (
         <>
