@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { MUSCLE_GROUPS } from '../utils/workout'
 import { listWorkouts, createWorkout, updateWorkout, deleteWorkout } from '../services/workoutsApi'
 import { listSessions, createSession, deleteSession } from '../services/sessionsApi'
 import WorkoutCard from './WorkoutCard'
@@ -13,17 +12,47 @@ import SessionHistory from './SessionHistory'
 
 const PAGE_SIZE = 10
 
+function CardSkeleton() {
+  return (
+    <div className="bg-surface rounded-2xl p-5 flex flex-col gap-3 animate-pulse">
+      <div className="h-6 w-2/3 bg-muted/20 rounded-lg" />
+      <div className="h-3 w-1/4 bg-muted/20 rounded-lg" />
+      <div className="flex gap-1.5">
+        <div className="h-5 w-14 bg-muted/20 rounded-full" />
+        <div className="h-5 w-16 bg-muted/20 rounded-full" />
+      </div>
+      <div className="flex flex-col gap-1.5 pt-1">
+        <div className="h-4 bg-muted/20 rounded-lg" />
+        <div className="h-4 bg-muted/20 rounded-lg" />
+        <div className="h-4 w-3/4 bg-muted/20 rounded-lg" />
+      </div>
+    </div>
+  )
+}
+
+function ErrorState({ message, onRetry }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 gap-3">
+      <p className="text-sm text-muted text-center">{message}</p>
+      <button
+        onClick={onRetry}
+        className="text-xs text-strong underline-offset-2 hover:underline transition-all"
+      >
+        Try again
+      </button>
+    </div>
+  )
+}
+
 export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab, onTabChange }) {
   const queryClient = useQueryClient()
   const [activeSession, setActiveSession] = useState(null)
   const [editTarget, setEditTarget] = useState(null)
 
-  // workout filters
   const [activeTags, setActiveTags] = useState([])
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [page, setPage] = useState(0)
 
-  // session filters
   const [historyActiveTags, setHistoryActiveTags] = useState([])
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -38,13 +67,23 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
     ...(dateTo && { dateTo }),
   }
 
-  const { data: workoutsData, isLoading: workoutsLoading } = useQuery({
+  const {
+    data: workoutsData,
+    isLoading: workoutsLoading,
+    isError: workoutsError,
+    refetch: refetchWorkouts,
+  } = useQuery({
     queryKey: ['workouts', workoutFilters],
     queryFn: () => listWorkouts(workoutFilters),
     enabled: activeTab === 'workouts',
   })
 
-  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
+  const {
+    data: sessionsData,
+    isLoading: sessionsLoading,
+    isError: sessionsError,
+    refetch: refetchSessions,
+  } = useQuery({
     queryKey: ['sessions', sessionFilters],
     queryFn: () => listSessions(sessionFilters),
     enabled: activeTab === 'history',
@@ -82,9 +121,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
 
   function importSessions(incoming) {
     const now = new Date().toISOString()
-    incoming.forEach(s => {
-      createSessionMutation.mutate({ ...s, finishedAt: s.finishedAt ?? now })
-    })
+    incoming.forEach(s => createSessionMutation.mutate({ ...s, finishedAt: s.finishedAt ?? now }))
   }
 
   function startSession(workout) {
@@ -128,14 +165,6 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
     setSessionPage(0)
     setHistoryActiveTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])
   }
-
-  // client-side tag filter for sessions not covered by date range (tags are server-filtered)
-  const filteredSessions = sessions.filter(s => {
-    if (historyActiveTags.length === 0) return true
-    const hasDirectTag = s.tags?.some(t => historyActiveTags.includes(t))
-    const hasUnknownTag = historyActiveTags.includes('Other') && s.tags?.some(t => !MUSCLE_GROUPS.includes(t))
-    return hasDirectTag || hasUnknownTag
-  })
 
   return (
     <>
@@ -192,7 +221,11 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
           />
 
           {workoutsLoading ? (
-            <p className="text-sm text-muted text-center py-8">Loading…</p>
+            <div className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
+            </div>
+          ) : workoutsError ? (
+            <ErrorState message="Could not load workouts." onRetry={refetchWorkouts} />
           ) : (
             <div className="flex flex-col gap-4">
               {workouts.map(workout => (
@@ -263,10 +296,14 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
           </div>
 
           {sessionsLoading ? (
-            <p className="text-sm text-muted text-center py-8">Loading…</p>
+            <div className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
+            </div>
+          ) : sessionsError ? (
+            <ErrorState message="Could not load session history." onRetry={refetchSessions} />
           ) : (
             <SessionHistory
-              sessions={filteredSessions}
+              sessions={sessions}
               onRemove={id => deleteSessionMutation.mutate(id)}
             />
           )}
