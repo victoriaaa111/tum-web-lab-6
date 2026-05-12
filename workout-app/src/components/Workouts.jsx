@@ -4,76 +4,94 @@ import { AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { MUSCLE_GROUPS } from '../utils/workout'
 import { listWorkouts, createWorkout, updateWorkout, deleteWorkout } from '../services/workoutsApi'
+import { listSessions, createSession, deleteSession } from '../services/sessionsApi'
 import WorkoutCard from './WorkoutCard'
 import AddWorkoutModal from './AddWorkoutModal'
 import FilterBar from './FilterBar'
 import ActiveSession from './ActiveSession'
 import SessionHistory from './SessionHistory'
 
-const SESSIONS_KEY = 'workout-journal-sessions'
 const PAGE_SIZE = 10
-
-function loadSessions() {
-  try {
-    const stored = localStorage.getItem(SESSIONS_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch {
-    return []
-  }
-}
 
 export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab, onTabChange }) {
   const queryClient = useQueryClient()
-  const [sessions, setSessions] = useState(loadSessions)
   const [activeSession, setActiveSession] = useState(null)
   const [editTarget, setEditTarget] = useState(null)
+
+  // workout filters
   const [activeTags, setActiveTags] = useState([])
   const [favoritesOnly, setFavoritesOnly] = useState(false)
-  const [historyActiveTags, setHistoryActiveTags] = useState([])
   const [page, setPage] = useState(0)
 
-  const filters = { page, size: PAGE_SIZE, tags: activeTags, ...(favoritesOnly && { favorite: true }) }
+  // session filters
+  const [historyActiveTags, setHistoryActiveTags] = useState([])
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [sessionPage, setSessionPage] = useState(0)
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['workouts', filters],
-    queryFn: () => listWorkouts(filters),
+  const workoutFilters = { page, size: PAGE_SIZE, tags: activeTags, ...(favoritesOnly && { favorite: true }) }
+  const sessionFilters = {
+    page: sessionPage,
+    size: PAGE_SIZE,
+    tags: historyActiveTags,
+    ...(dateFrom && { dateFrom }),
+    ...(dateTo && { dateTo }),
+  }
+
+  const { data: workoutsData, isLoading: workoutsLoading } = useQuery({
+    queryKey: ['workouts', workoutFilters],
+    queryFn: () => listWorkouts(workoutFilters),
+    enabled: activeTab === 'workouts',
   })
 
-  const workouts = data?.data ?? []
-  const totalPages = data?.totalPages ?? 1
+  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['sessions', sessionFilters],
+    queryFn: () => listSessions(sessionFilters),
+    enabled: activeTab === 'history',
+  })
 
-  function invalidate() {
-    queryClient.invalidateQueries({ queryKey: ['workouts'] })
-  }
+  const workouts = workoutsData?.data ?? []
+  const totalPages = workoutsData?.totalPages ?? 1
+  const sessions = sessionsData?.data ?? []
+  const sessionTotalPages = sessionsData?.totalPages ?? 1
 
-  const createMutation = useMutation({ mutationFn: createWorkout, onSuccess: invalidate })
-  const updateMutation = useMutation({ mutationFn: ({ id, data }) => updateWorkout(id, data), onSuccess: invalidate })
-  const deleteMutation = useMutation({ mutationFn: deleteWorkout, onSuccess: invalidate })
-
-  function saveSessions(updated) {
-    setSessions(updated)
-    localStorage.setItem(SESSIONS_KEY, JSON.stringify(updated))
-  }
+  const createWorkoutMutation = useMutation({
+    mutationFn: createWorkout,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
+  })
+  const updateWorkoutMutation = useMutation({
+    mutationFn: ({ id, data }) => updateWorkout(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
+  })
+  const deleteWorkoutMutation = useMutation({
+    mutationFn: deleteWorkout,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
+  })
+  const createSessionMutation = useMutation({
+    mutationFn: createSession,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+  })
+  const deleteSessionMutation = useMutation({
+    mutationFn: deleteSession,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+  })
 
   function importWorkouts(incoming) {
-    incoming.forEach(w => createMutation.mutate({ title: w.title, tags: w.tags ?? [], exercises: w.exercises ?? [] }))
+    incoming.forEach(w => createWorkoutMutation.mutate({ title: w.title, tags: w.tags ?? [], exercises: w.exercises ?? [] }))
   }
 
   function importSessions(incoming) {
-    const existingIds = new Set(sessions.map(s => s.id))
     const now = new Date().toISOString()
-    const base = Date.now()
-    const merged = incoming
-      .filter(s => !existingIds.has(s.id))
-      .map((s, i) => ({ ...s, id: `${base}${i}`, finishedAt: s.finishedAt ?? now }))
-    saveSessions([...sessions, ...merged])
+    incoming.forEach(s => {
+      createSessionMutation.mutate({ ...s, finishedAt: s.finishedAt ?? now })
+    })
   }
 
   function startSession(workout) {
     const base = Date.now()
     setActiveSession({
-      id: String(base),
       workoutTitle: workout.title || 'Untitled',
+      workoutId: workout.id,
       tags: workout.tags ?? [],
       startedAt: new Date().toISOString(),
       exercises: workout.exercises.map((e, i) => ({ ...e, id: `${base}_${i}`, completed: false })),
@@ -81,17 +99,17 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
   }
 
   function finishSession(completed) {
-    saveSessions([completed, ...sessions])
+    createSessionMutation.mutate(completed)
     setActiveSession(null)
     onTabChange('history')
   }
 
   function handleSave(formData) {
     if (editTarget) {
-      updateMutation.mutate({ id: editTarget.id, data: formData })
+      updateWorkoutMutation.mutate({ id: editTarget.id, data: formData })
       setEditTarget(null)
     } else {
-      createMutation.mutate(formData)
+      createWorkoutMutation.mutate(formData)
       onCloseAdd()
     }
   }
@@ -101,21 +119,23 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
     onCloseAdd()
   }
 
-  const filteredSessions = sessions.filter(s => {
-    if (historyActiveTags.length === 0) return true
-    const hasDirectTag = s.tags?.some(t => historyActiveTags.includes(t))
-    const hasUnknownTag = historyActiveTags.includes('Other') && s.tags?.some(t => !MUSCLE_GROUPS.includes(t))
-    return hasDirectTag || hasUnknownTag
-  })
-
   function toggleTag(tag) {
     setPage(0)
     setActiveTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])
   }
 
   function toggleHistoryTag(tag) {
+    setSessionPage(0)
     setHistoryActiveTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])
   }
+
+  // client-side tag filter for sessions not covered by date range (tags are server-filtered)
+  const filteredSessions = sessions.filter(s => {
+    if (historyActiveTags.length === 0) return true
+    const hasDirectTag = s.tags?.some(t => historyActiveTags.includes(t))
+    const hasUnknownTag = historyActiveTags.includes('Other') && s.tags?.some(t => !MUSCLE_GROUPS.includes(t))
+    return hasDirectTag || hasUnknownTag
+  })
 
   return (
     <>
@@ -171,7 +191,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
             onToggleFavorites={() => { setPage(0); setFavoritesOnly(f => !f) }}
           />
 
-          {isLoading ? (
+          {workoutsLoading ? (
             <p className="text-sm text-muted text-center py-8">Loading…</p>
           ) : (
             <div className="flex flex-col gap-4">
@@ -179,10 +199,10 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
                 <WorkoutCard
                   key={workout.id}
                   workout={workout}
-                  onRemove={id => deleteMutation.mutate(id)}
+                  onRemove={id => deleteWorkoutMutation.mutate(id)}
                   onToggleFavorite={id => {
                     const w = workouts.find(x => x.id === id)
-                    if (w) updateMutation.mutate({ id, data: { favorite: !w.favorite } })
+                    if (w) updateWorkoutMutation.mutate({ id, data: { favorite: !w.favorite } })
                   }}
                   onEdit={setEditTarget}
                   onStart={startSession}
@@ -220,7 +240,56 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
             onToggleFavorites={() => {}}
             showFavorites={false}
           />
-          <SessionHistory sessions={filteredSessions} onRemove={id => saveSessions(sessions.filter(s => s.id !== id))} />
+
+          <div className="flex gap-2 mb-4">
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs text-muted">From</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={e => { setDateFrom(e.target.value); setSessionPage(0) }}
+                className="bg-surface rounded-xl px-3 py-2 text-strong text-sm outline-none w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs text-muted">To</label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={e => { setDateTo(e.target.value); setSessionPage(0) }}
+                className="bg-surface rounded-xl px-3 py-2 text-strong text-sm outline-none w-full"
+              />
+            </div>
+          </div>
+
+          {sessionsLoading ? (
+            <p className="text-sm text-muted text-center py-8">Loading…</p>
+          ) : (
+            <SessionHistory
+              sessions={filteredSessions}
+              onRemove={id => deleteSessionMutation.mutate(id)}
+            />
+          )}
+
+          {sessionTotalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 mt-6">
+              <button
+                onClick={() => setSessionPage(p => p - 1)}
+                disabled={sessionPage === 0}
+                className="p-1.5 text-muted hover:text-strong transition-colors disabled:opacity-30"
+              >
+                <ChevronLeft size={18} strokeWidth={1.75} />
+              </button>
+              <span className="text-sm text-muted">{sessionPage + 1} / {sessionTotalPages}</span>
+              <button
+                onClick={() => setSessionPage(p => p + 1)}
+                disabled={sessionPage >= sessionTotalPages - 1}
+                className="p-1.5 text-muted hover:text-strong transition-colors disabled:opacity-30"
+              >
+                <ChevronRight size={18} strokeWidth={1.75} />
+              </button>
+            </div>
+          )}
         </>
       )}
 
