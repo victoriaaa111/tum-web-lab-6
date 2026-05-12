@@ -66,9 +66,9 @@ export default function SessionHistory({ sessions, onRemove }) {
           )}
 
           <div className="flex flex-col gap-1.5">
-            {session.exercises.map(e => (
+            {session.exercises.map((e, i) => (
               <div
-                key={e.id}
+                key={e.id ?? i}
                 className={`flex items-center justify-between ${e.completed ? '' : 'opacity-40'}`}
               >
                 <span className={`text-sm ${e.completed ? 'line-through text-muted' : 'text-ink'}`}>
