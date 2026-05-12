@@ -1,10 +1,14 @@
 import { Heart, Pencil, Play, Trash2 } from 'lucide-react'
+import { useAuth } from '../context/useAuth'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdit, onStart }) {
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'VISITOR'
+
   return (
     <div className="bg-surface rounded-2xl p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
@@ -12,28 +16,34 @@ export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdi
           {workout.title || 'Untitled'}
         </h2>
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => onToggleFavorite(workout.id)}
-            className="p-1.5 rounded-full text-muted hover:text-strong transition-colors"
-          >
-            <Heart
-              size={18}
-              strokeWidth={1.75}
-              className={workout.favorite ? 'fill-accent text-accent' : ''}
-            />
-          </button>
-          <button
-            onClick={() => onEdit(workout)}
-            className="p-1.5 rounded-full text-muted hover:text-strong transition-colors"
-          >
-            <Pencil size={18} strokeWidth={1.75} />
-          </button>
-          <button
-            onClick={() => onRemove(workout.id)}
-            className="p-1.5 rounded-full text-muted hover:text-strong transition-colors"
-          >
-            <Trash2 size={18} strokeWidth={1.75} />
-          </button>
+          {canWrite && (
+            <button
+              onClick={() => onToggleFavorite(workout.id)}
+              className="p-1.5 rounded-full text-muted hover:text-strong transition-colors"
+            >
+              <Heart
+                size={18}
+                strokeWidth={1.75}
+                className={workout.favorite ? 'fill-accent text-accent' : ''}
+              />
+            </button>
+          )}
+          {canWrite && (
+            <button
+              onClick={() => onEdit(workout)}
+              className="p-1.5 rounded-full text-muted hover:text-strong transition-colors"
+            >
+              <Pencil size={18} strokeWidth={1.75} />
+            </button>
+          )}
+          {canWrite && (
+            <button
+              onClick={() => onRemove(workout.id)}
+              className="p-1.5 rounded-full text-muted hover:text-strong transition-colors"
+            >
+              <Trash2 size={18} strokeWidth={1.75} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -60,13 +70,15 @@ export default function WorkoutCard({ workout, onRemove, onToggleFavorite, onEdi
         </div>
       )}
 
-      <button
-        onClick={() => onStart(workout)}
-        className="flex items-center gap-1.5 text-xs text-muted hover:text-strong transition-colors self-start pt-1"
-      >
-        <Play size={13} strokeWidth={1.75} />
-        Start workout
-      </button>
+      {canWrite && (
+        <button
+          onClick={() => onStart(workout)}
+          className="flex items-center gap-1.5 text-xs text-muted hover:text-strong transition-colors self-start pt-1"
+        >
+          <Play size={13} strokeWidth={1.75} />
+          Start workout
+        </button>
+      )}
     </div>
   )
 }
