@@ -1,8 +1,11 @@
-import { LogOut, Moon, Plus, Sun } from 'lucide-react'
+import { LogOut, Moon, Plus, ShieldCheck, Sun } from 'lucide-react'
 import ExportButton from '../ExportButton'
 import ImportButton from '../ImportButton'
+import { useAuth } from '../../context/useAuth'
 
-function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, onLogout, showFab, children }) {
+function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, onLogout, showFab, isAdmin, activePage, onAdminNav, children }) {
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'VISITOR'
   return (
     <div className="min-h-screen textured flex justify-center items-start py-6 px-4 md:py-10 md:px-8 transition-colors duration-300">
       <div className="
@@ -20,8 +23,17 @@ function PageLayout({ onAddWorkout, onToggleTheme, isDark, onImportData, onLogou
             Workout Journal
           </h1>
           <div className="flex items-center gap-1">
-            <ImportButton onImportData={onImportData} />
+            {canWrite && <ImportButton onImportData={onImportData} />}
             <ExportButton />
+            {isAdmin && (
+              <button
+                onClick={onAdminNav}
+                className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${activePage === 'admin' ? 'text-strong' : 'text-muted hover:text-strong'}`}
+                aria-label="Admin dashboard"
+              >
+                <ShieldCheck size={20} strokeWidth={1.75} />
+              </button>
+            )}
             <button
               onClick={onToggleTheme}
               className="w-9 h-9 flex items-center justify-center rounded-full text-muted hover:text-strong transition-colors"

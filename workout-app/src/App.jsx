@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import PageLayout from './components/layout/PageLayout'
 import Workouts from './components/Workouts'
+import AdminDashboard from './components/AdminDashboard'
 import LandingPage from './components/LandingPage'
 import { useAuth } from './context/useAuth'
 
@@ -11,6 +12,7 @@ function App() {
   })
   const [addOpen, setAddOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('workouts')
+  const [activePage, setActivePage] = useState('journal')
   const fileInputRef = useRef(null)
 
   useEffect(() => {
@@ -33,6 +35,8 @@ function App() {
     )
   }
 
+  const isAdmin = user.role === 'ADMIN'
+
   return (
     <PageLayout
       onToggleTheme={toggleTheme}
@@ -40,15 +44,22 @@ function App() {
       onAddWorkout={() => setAddOpen(true)}
       onImportData={() => fileInputRef.current?.click()}
       onLogout={logout}
-      showFab={activeTab === 'workouts'}
+      showFab={activeTab === 'workouts' && activePage === 'journal' && user.role !== 'VISITOR'}
+      isAdmin={isAdmin}
+      activePage={activePage}
+      onAdminNav={() => setActivePage(p => p === 'admin' ? 'journal' : 'admin')}
     >
-      <Workouts
-        addOpen={addOpen}
-        onCloseAdd={() => setAddOpen(false)}
-        fileInputRef={fileInputRef}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      {activePage === 'admin' && isAdmin ? (
+        <AdminDashboard />
+      ) : (
+        <Workouts
+          addOpen={addOpen}
+          onCloseAdd={() => setAddOpen(false)}
+          fileInputRef={fileInputRef}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      )}
     </PageLayout>
   )
 }

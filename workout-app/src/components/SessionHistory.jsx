@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react'
+import { useAuth } from '../context/useAuth'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -17,6 +18,9 @@ function formatDuration(startedAt, finishedAt) {
 }
 
 export default function SessionHistory({ sessions, onRemove }) {
+  const { user } = useAuth()
+  const canWrite = user?.role !== 'VISITOR'
+
   if (sessions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-2">
@@ -41,12 +45,14 @@ export default function SessionHistory({ sessions, onRemove }) {
                 {formatDate(session.finishedAt)} · {formatTime(session.startedAt)} – {formatTime(session.finishedAt)} · {formatDuration(session.startedAt, session.finishedAt)}
               </p>
             </div>
-            <button
-              onClick={() => onRemove(session.id)}
-              className="p-1.5 rounded-full text-muted hover:text-strong transition-colors shrink-0"
-            >
-              <Trash2 size={18} strokeWidth={1.75} />
-            </button>
+            {canWrite && (
+              <button
+                onClick={() => onRemove(session.id)}
+                className="p-1.5 rounded-full text-muted hover:text-strong transition-colors shrink-0"
+              >
+                <Trash2 size={18} strokeWidth={1.75} />
+              </button>
+            )}
           </div>
 
           {session.tags?.length > 0 && (
