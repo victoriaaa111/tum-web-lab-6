@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Download } from 'lucide-react'
 
+const BASE = import.meta.env.VITE_API_BASE ?? '/api'
+
 async function downloadFromApi(path, filename) {
-  const res = await fetch(`/api${path}`, { credentials: 'include' })
+  const res = await fetch(`${BASE}${path}`, { credentials: 'include' })
   if (!res.ok) throw new Error('Export failed')
   const blob = await res.blob()
   const url = URL.createObjectURL(blob)
