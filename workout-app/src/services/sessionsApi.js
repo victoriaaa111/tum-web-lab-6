@@ -15,3 +15,7 @@ export function createSession(data) {
 export function deleteSession(id) {
   return apiRequest(`/sessions/${id}`, { method: 'DELETE' })
 }
+
+export function importSessions(data) {
+  return apiRequest('/sessions/import', { method: 'POST', body: JSON.stringify(data) })
+}

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { listWorkouts, createWorkout, updateWorkout, deleteWorkout, importWorkouts as importWorkoutsApi } from '../services/workoutsApi'
-import { listSessions, createSession, deleteSession } from '../services/sessionsApi'
+import { listSessions, createSession, deleteSession, importSessions as importSessionsApi } from '../services/sessionsApi'
 import WorkoutCard from './WorkoutCard'
 import AddWorkoutModal from './AddWorkoutModal'
 import FilterBar from './FilterBar'
@@ -114,6 +114,10 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
     mutationFn: createSession,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
   })
+  const importSessionsMutation = useMutation({
+    mutationFn: importSessionsApi,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+  })
   const deleteSessionMutation = useMutation({
     mutationFn: deleteSession,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
@@ -124,8 +128,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
   }
 
   function importSessions(incoming) {
-    const now = new Date().toISOString()
-    incoming.forEach(s => createSessionMutation.mutate({ ...s, finishedAt: s.finishedAt ?? now }))
+    importSessionsMutation.mutate(incoming)
   }
 
   function startSession(workout) {
