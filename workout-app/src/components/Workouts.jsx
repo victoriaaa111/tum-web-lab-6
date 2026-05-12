@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { listWorkouts, createWorkout, updateWorkout, deleteWorkout, importWorkouts as importWorkoutsApi } from '../services/workoutsApi'
+import { listWorkouts, createWorkout, updateWorkout, updateWorkoutWithExercises, deleteWorkout, importWorkouts as importWorkoutsApi } from '../services/workoutsApi'
 import { listSessions, createSession, deleteSession, importSessions as importSessionsApi } from '../services/sessionsApi'
 import WorkoutCard from './WorkoutCard'
 import AddWorkoutModal from './AddWorkoutModal'
@@ -113,7 +113,10 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
     },
   })
   const updateWorkoutMutation = useMutation({
-    mutationFn: ({ id, data }) => updateWorkout(id, data),
+    mutationFn: ({ id, data, originalExercises }) =>
+      originalExercises
+        ? updateWorkoutWithExercises(id, data, originalExercises)
+        : updateWorkout(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
   })
   const deleteWorkoutMutation = useMutation({
@@ -163,7 +166,7 @@ export default function Workouts({ addOpen, onCloseAdd, fileInputRef, activeTab,
 
   function handleSave(formData) {
     if (editTarget) {
-      updateWorkoutMutation.mutate({ id: editTarget.id, data: formData })
+      updateWorkoutMutation.mutate({ id: editTarget.id, data: formData, originalExercises: editTarget.exercises })
       setEditTarget(null)
     } else {
       createWorkoutMutation.mutate(formData)
